@@ -1,0 +1,58 @@
+body {
+  font-family: 'Arial', sans-serif;
+  background: #e0f7fa;
+  margin: 0;
+  padding: 20px;
+  text-align: center;
+}
+
+.container {
+  max-width: 400px;
+  margin: auto;
+}
+
+h1 {
+  color: #00796b;
+}
+
+.tank {
+  margin: 20px 0;
+}
+
+.tank-graphic {
+  width: 100%;
+  background: #cfd8dc;
+  border: 3px solid #455a64;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.tank-graphic.large {
+  height: 200px;
+}
+
+.tank-graphic.small {
+  height: 130px;
+}
+
+.fill {
+  background: linear-gradient(to top, #009688, #4db6ac);
+  width: 100%;
+  height: 0%;
+  position: absolute;
+  bottom: 0;
+  transition: height 0.5s ease;
+}
+
+p {
+  margin: 0;
+  font-size: 18px;
+}
+
+.ip-info {
+  margin-top: 30px;
+  font-size: 14px;
+  color: #555;
+}

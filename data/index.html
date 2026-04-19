@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Water Tank Monitor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <meta name="theme-color" content="#009688">
+</head>
+<body>
+  <div class="container">
+    <h1>💧 Water Tank Monitor</h1>
+    <div class="tank">
+      <h2>Badi Tanki</h2>
+      <div class="tank-graphic large">
+        <div id="tank1-fill" class="fill"></div>
+      </div>
+      <p id="tank1-percentage">0%</p>
+    </div>
+    <div class="tank">
+      <h2>Choti Tanki</h2>
+      <div class="tank-graphic small">
+        <div id="tank2-fill" class="fill"></div>
+      </div>
+      <p id="tank2-percentage">0%</p>
+    </div>
+    <p class="ip-info">📶 Device IP: <span id="device-ip"></span></p>
+  </div>
+  <script src="/script.js"></script>
+</body>
+</html>
