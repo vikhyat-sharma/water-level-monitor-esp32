@@ -1,8 +1,6 @@
-#define BLYNK_TEMPLATE_ID "YOUR_BLYNK_TEMPLATE_ID"
-#define BLYNK_TEMPLATE_NAME "Water Level Monitor"
 #include <BlynkSimpleEsp32.h>
 #include <Arduino.h>
-#include <TimeLib.h>
+#include <time.h>
 #include "BlynkManager.h"
 #include "WiFiManager.h"
 
@@ -29,13 +27,21 @@ void BlynkManager::sendTankLevels(float level1, float level2) {
 }
 
 void BlynkManager::updateBlynkInterval() {
-  int minutesNow = (hour() * 60) + minute();
-  int interval = 150000;
+  int minutesNow = -1;
+  struct tm timeinfo;
 
-  if ((minutesNow >= configManager.config.highFreqStart1 && minutesNow <= configManager.config.highFreqEnd1)
-      || (minutesNow >= configManager.config.highFreqStart2 && minutesNow <= configManager.config.highFreqEnd2)) {
-    interval = 50000;
+  if (getLocalTime(&timeinfo)) {
+    minutesNow = timeinfo.tm_hour * 60 + timeinfo.tm_min;
   }
 
-  Blynk.setProperty(V2, "interval", interval * 1000);
+  int intervalSeconds = configManager.config.blynkInterval;
+  if (minutesNow >= 0 &&
+      ((minutesNow >= configManager.config.highFreqStart1 && minutesNow <= configManager.config.highFreqEnd1) ||
+       (minutesNow >= configManager.config.highFreqStart2 && minutesNow <= configManager.config.highFreqEnd2))) {
+    intervalSeconds = 120;
+  }
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Blynk.setProperty(V2, "interval", intervalSeconds * 1000);
+  }
 }

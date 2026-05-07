@@ -6,6 +6,7 @@
 #define WIFI_PASSWORD  "YOUR_WIFI_PASSWORD"
 
 // Static IP Config
+#define USE_STATIC_IP  false
 #define STATIC_IP      192, 168, 1, 2
 #define GATEWAY_IP     192, 168, 1, 1
 #define SUBNET_MASK    255, 255, 255, 0
@@ -42,7 +43,7 @@
 #define HF_SLOT1_END      420   // 7:00 AM
 #define HF_SLOT2_START    1020  // 5:00 PM
 #define HF_SLOT2_END      1080  // 6:00 PM
-#define QUITE_HOURS_START 1320 // 10:30 PM
-#define QUITE_HOURS_END   345   // 5:45 AM
+#define QUIET_HOURS_START 1320 // 10:30 PM
+#define QUIET_HOURS_END   345   // 5:45 AM
 
 #endif

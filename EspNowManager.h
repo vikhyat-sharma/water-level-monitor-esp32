@@ -11,10 +11,10 @@ struct MessagePacket {
 
 class EspNowManager {
 public:
-  static void begin();
-  static void sendCommand(const char* command);
-  static void sendLevels(int tank1, int tank2);
-  static void sendTelegramLevels(const String& message);
+  void begin();
+  void sendCommand(const char* command);
+  void sendLevels(int tank1, int tank2);
+  void sendTelegramLevels(const String& message);
 };
 
 extern EspNowManager espNowManager;

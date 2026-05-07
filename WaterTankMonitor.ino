@@ -55,7 +55,6 @@ void loop() {
 
   webServerManager.handleClient();
   wifiManager.handleDNS();
-  dnsServer.processNextRequest();
   blynkManager.run();
 
   if (currentMillis - previousMillis >= intervalMillis) {
@@ -93,12 +92,14 @@ void loop() {
 
   // Check quiet hours — suppress notification if within quiet period
   bool inQuietHours = false;
-  if (configManager.config.quietHoursStart < configManager.config.quietHoursEnd) {
-    // Normal case, e.g. 1320 to 345
-    inQuietHours = (minutesNow >= configManager.config.quietHoursStart && minutesNow < configManager.config.quietHoursEnd);
-  } else {
-    // Spans over midnight
-    inQuietHours = (minutesNow >= configManager.config.quietHoursStart || minutesNow < configManager.config.quietHoursEnd);
+  if (minutesNow >= 0) {
+    if (configManager.config.quietHoursStart < configManager.config.quietHoursEnd) {
+      // Normal case, e.g. 360 to 420
+      inQuietHours = (minutesNow >= configManager.config.quietHoursStart && minutesNow < configManager.config.quietHoursEnd);
+    } else {
+      // Spans over midnight
+      inQuietHours = (minutesNow >= configManager.config.quietHoursStart || minutesNow < configManager.config.quietHoursEnd);
+    }
   }
 
   if (!inQuietHours) {
@@ -115,6 +116,8 @@ void loop() {
       sendNotification(telegramNotification);
     }
   }
+
+  blynkManager.updateBlynkInterval();
 
 }
 

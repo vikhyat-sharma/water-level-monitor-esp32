@@ -9,6 +9,9 @@ const byte DNS_PORT = 53;
 WiFiManager wifiManager;
 
 void WiFiManager::connectWiFi() {
+  if (USE_STATIC_IP) {
+    WiFi.config(IPAddress(STATIC_IP), IPAddress(GATEWAY_IP), IPAddress(SUBNET_MASK), IPAddress(PRIMARY_DNS), IPAddress(SECONDARY_DNS));
+  }
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to WiFi");
 

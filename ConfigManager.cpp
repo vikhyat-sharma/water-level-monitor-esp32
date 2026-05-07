@@ -17,8 +17,8 @@ void ConfigManager::loadConfig() {
   config.highFreqEnd1 = preferences.getInt("hfEnd1", HF_SLOT1_END);
   config.highFreqStart2 = preferences.getInt("hfStart2", HF_SLOT2_START);
   config.highFreqEnd2 = preferences.getInt("hfEnd2", HF_SLOT2_END);
-  config.quietHoursStart = preferences.getInt("hqStart", QUITE_HOURS_START);
-  config.quietHoursEnd = preferences.getInt("hqEnd", QUITE_HOURS_END);
+  config.quietHoursStart = preferences.getInt("hqStart", QUIET_HOURS_START);
+  config.quietHoursEnd = preferences.getInt("hqEnd", QUIET_HOURS_END);
   preferences.end();
 }
 

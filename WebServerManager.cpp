@@ -26,8 +26,8 @@ void WebServerManager::startServer() {
     float level1 = sensorManager.readTankLevel(TRIG_PIN_1, ECHO_PIN_1, configManager.config.tank1Height, configManager.config.tank1Offset);
     float level2 = sensorManager.readTankLevel(TRIG_PIN_2, ECHO_PIN_2, configManager.config.tank2Height, configManager.config.tank2Offset);
 
-    float percentage1 = (level1 / configManager.config.tank1Height) * 100;
-    float percentage2 = (level2 / configManager.config.tank2Height) * 100;
+    float percentage1 = (level1 < 0) ? -1 : (level1 / configManager.config.tank1Height) * 100;
+    float percentage2 = (level2 < 0) ? -1 : (level2 / configManager.config.tank2Height) * 100;
     String json = "{\"tank1\":" + String(percentage1, 1) + ",\"tank2\":" + String(percentage2, 1) + "}";
     server.send(200, "application/json", json);
   });
