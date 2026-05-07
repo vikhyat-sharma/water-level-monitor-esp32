@@ -75,6 +75,7 @@ Update the following before flashing:
 
   * `WIFI_SSID`
   * `WIFI_PASSWORD`
+  * `USE_STATIC_IP` (set to `true` to enable configured static IP values)
 
 * **Telegram**
 
