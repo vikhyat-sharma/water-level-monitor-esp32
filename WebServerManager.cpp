@@ -2,6 +2,8 @@
 #include "WebServerManager.h"
 #include "WebUIData.h"
 #include "WiFiManager.h"
+#include "DataLogger.h"
+#include "MQTTManager.h"
 
 WebServerManager webServerManager;
 
@@ -99,6 +101,68 @@ void WebServerManager::startServer() {
 
     configManager.saveConfig();
     server.send(200, "text/plain", "Config saved.");
+  });
+
+  // New endpoint: Get historical data
+  server.on("/api/history", HTTP_GET, [this]() {
+    #if ENABLE_DATA_LOGGING
+    int hours = 24;  // Default to 24 hours
+    if (server.hasArg("hours")) {
+      hours = server.arg("hours").toInt();
+      if (hours < 1) hours = 1;
+      if (hours > 168) hours = 168;  // Max 7 days
+    }
+    String data = dataLogger.getHistoricalData(hours);
+    server.send(200, "application/json", data);
+    #else
+    server.send(503, "application/json", "{\"error\":\"Data logging not enabled\"}");
+    #endif
+  });
+
+  // New endpoint: System info
+  server.on("/api/system", HTTP_GET, [this]() {
+    DynamicJsonDocument doc(512);
+    doc["device"] = "water-level-monitor-esp32";
+    doc["version"] = "2.0.0";
+    doc["uptime_seconds"] = millis() / 1000;
+    doc["free_heap"] = ESP.getFreeHeap();
+    doc["wifi_rssi"] = WiFi.RSSI();
+    doc["wifi_connected"] = WiFi.status() == WL_CONNECTED;
+    doc["ip_address"] = wifiManager.getIPAddress();
+    
+    #if ENABLE_DATA_LOGGING
+    doc["data_logging"] = dataLogger.isInitialized();
+    #else
+    doc["data_logging"] = false;
+    #endif
+    
+    #ifdef MQTT_ENABLED
+    doc["mqtt_enabled"] = true;
+    doc["mqtt_connected"] = mqttManager.isConnected();
+    #else
+    doc["mqtt_enabled"] = false;
+    #endif
+    
+    doc["ota_enabled"] = true;
+
+    String json;
+    serializeJson(doc, json);
+    server.send(200, "application/json", json);
+  });
+
+  // New endpoint: Clear old logs
+  server.on("/api/clearLogs", HTTP_POST, [this]() {
+    #if ENABLE_DATA_LOGGING
+    int days = 7;
+    if (server.hasArg("days")) {
+      days = server.arg("days").toInt();
+      if (days < 1) days = 1;
+    }
+    dataLogger.clearOldData(days);
+    server.send(200, "application/json", "{\"status\":\"success\",\"message\":\"Logs cleared\"}");
+    #else
+    server.send(503, "application/json", "{\"error\":\"Data logging not enabled\"}");
+    #endif
   });
 
   server.onNotFound([this]() {
