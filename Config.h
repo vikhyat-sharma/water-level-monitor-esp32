@@ -46,4 +46,22 @@
 #define QUIET_HOURS_START 1320 // 10:30 PM
 #define QUIET_HOURS_END   345   // 5:45 AM
 
+// OTA Update Password (optional - comment out to disable password)
+// #define OTA_PASSWORD "your_ota_password"
+
+// MQTT Configuration (optional - uncomment to enable)
+// #define MQTT_ENABLED
+// #define MQTT_SERVER "192.168.1.100"
+// #define MQTT_PORT 1883
+// #define MQTT_USER "your_mqtt_user"
+// #define MQTT_PASSWORD "your_mqtt_password"
+// #define MQTT_BASE_TOPIC "homeassistant/sensor/water_tank"
+
+// Sensor Configuration
+#define SENSOR_SAMPLES 3  // Number of readings to average
+
+// Data Logging
+#define ENABLE_DATA_LOGGING true
+#define LOG_INTERVAL_MINUTES 15  // Log data every 15 minutes
+
 #endif
