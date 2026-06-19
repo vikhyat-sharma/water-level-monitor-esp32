@@ -8,6 +8,10 @@
 #include "WiFiClientSecure.h"
 #include "HTTPClient.h"
 #include "EspNowManager.h"
+#include "OTAManager.h"
+#include "DataLogger.h"
+#include "MQTTManager.h"
+#include "AlertManager.h"
 
 struct TankLevels {
   float level1;
@@ -21,6 +25,7 @@ struct TankLevels {
 static const unsigned long kNotificationIntervalMs = 2UL * 60UL * 1000UL;
 static const unsigned long kTelegramIntervalMs = 30UL * 60UL * 1000UL;
 static const unsigned long kWifiReconnectTimeoutMs = 10000UL;
+static const unsigned long kDataLogIntervalMs = LOG_INTERVAL_MINUTES * 60UL * 1000UL;
 
 unsigned long previousMillis = 0;
 unsigned long intervalMillis = 0;
@@ -28,12 +33,14 @@ unsigned long previousNotificationMillis = 0;
 unsigned long notificationIntervalMillis = kNotificationIntervalMs;
 unsigned long previousTelegramMillis = 0;
 unsigned long telegramIntervalMillis = kTelegramIntervalMs;
+unsigned long previousDataLogMillis = 0;
 unsigned long lastUpdateId = 0;
 
 TankLevels readTankLevels() {
   TankLevels data;
-  data.level1 = sensorManager.readTankLevel(TRIG_PIN_1, ECHO_PIN_1, configManager.config.tank1Height, configManager.config.tank1Offset);
-  data.level2 = sensorManager.readTankLevel(TRIG_PIN_2, ECHO_PIN_2, configManager.config.tank2Height, configManager.config.tank2Offset);
+  // Use averaged readings for better accuracy
+  data.level1 = sensorManager.readTankLevelAverage(TRIG_PIN_1, ECHO_PIN_1, configManager.config.tank1Height, configManager.config.tank1Offset, SENSOR_SAMPLES);
+  data.level2 = sensorManager.readTankLevelAverage(TRIG_PIN_2, ECHO_PIN_2, configManager.config.tank2Height, configManager.config.tank2Offset, SENSOR_SAMPLES);
   data.ok1 = data.level1 >= 0;
   data.ok2 = data.level2 >= 0;
   data.percent1 = data.ok1 ? (data.level1 / configManager.config.tank1Height) * 100.0f : -1.0f;
@@ -90,22 +97,45 @@ void reconnectWiFiIfNeeded() {
 
 void setup() {
   Serial.begin(115200);
+  Serial.println("\n\n=== Water Tank Monitor Starting ===");
+  
   configManager.loadConfig();
   wifiManager.connectWiFi();
   sensorManager.setupSensors();
+  
+  // Initialize new managers
+  otaManager.begin("water-tank-monitor");
+  
+  #if ENABLE_DATA_LOGGING
+  dataLogger.begin();
+  #endif
+  
+  mqttManager.begin();
+  alertManager.begin();
+  
   webServerManager.startServer();
   blynkManager.begin();
-  telegramManager.sendMessage("Tank Monitor started. IP: " + wifiManager.getIPAddress());
-  telegramManager.sendToApproved("Tank Monitor started. IP: " + wifiManager.getIPAddress());
+  
+  String startMsg = "🚀 Tank Monitor started\nIP: " + wifiManager.getIPAddress() + "\nFeatures: OTA, Logging, MQTT, Alerts";
+  telegramManager.sendMessage(startMsg);
+  telegramManager.sendToApproved(startMsg);
+  
   intervalMillis = static_cast<unsigned long>(configManager.config.updateInterval) * 1000UL;
   configTime(19800, 0, "pool.ntp.org");  // IST
   espNowManager.begin();
 
+  Serial.println("=== Initialization Complete ===\n");
   sendNotification(true);
 }
 
 void loop() {
   reconnectWiFiIfNeeded();
+  
+  // Handle OTA updates
+  otaManager.handle();
+  
+  // Handle MQTT
+  mqttManager.loop();
 
   unsigned long currentMillis = millis();
   webServerManager.handleClient();
@@ -116,15 +146,35 @@ void loop() {
     previousMillis = currentMillis;
     TankLevels tankData = readTankLevels();
 
-    Serial.print("Tank 1: "); Serial.print(tankData.level1); Serial.print(" in  |  ");
-    Serial.print("Tank 2: "); Serial.print(tankData.level2); Serial.println(" in");
+    Serial.print("Tank 1: "); Serial.print(tankData.level1); Serial.print(" in (");
+    Serial.print(tankData.percent1); Serial.print("%)  |  ");
+    Serial.print("Tank 2: "); Serial.print(tankData.level2); Serial.print(" in (");
+    Serial.print(tankData.percent2); Serial.println("%)");
+
+    // Check alerts with new alert manager
+    alertManager.checkAlerts(tankData.percent1, tankData.percent2, tankData.ok1, tankData.ok2);
 
     if (!tankData.ok1 || !tankData.ok2) {
       Serial.println("Tank 1/2 sensor error");
     } else if (tankData.percent2 > 95.0f) {
       espNowManager.sendCommand("OFF");
     }
+    
+    // Publish to MQTT
+    mqttManager.publishTankLevels(tankData.percent1, tankData.percent2, tankData.ok1, tankData.ok2);
   }
+
+  // Data logging
+  #if ENABLE_DATA_LOGGING
+  if (currentMillis - previousDataLogMillis >= kDataLogIntervalMs) {
+    previousDataLogMillis = currentMillis;
+    TankLevels tankData = readTankLevels();
+    if (tankData.ok1 && tankData.ok2) {
+      dataLogger.logData(tankData.percent1, tankData.percent2);
+      Serial.println("Data logged to SPIFFS");
+    }
+  }
+  #endif
 
   int minutesNow = getMinutesSinceMidnight();
   if (minutesNow >= 0) {
