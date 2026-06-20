@@ -9,18 +9,25 @@ Designed for reliability and automation, it combines sensor-based measurement, w
 
 * 📊 **Dual Tank Monitoring**
   Accurate level tracking using ultrasonic sensors with configurable tank height and offset
+  - Multi-sample averaging for improved accuracy
+  - Automatic sensor error detection and reporting
 
 * 🌐 **Built-in Web Dashboard**
   Responsive UI hosted directly on the ESP32
+  - Real-time tank level visualization
+  - Historical data charts (24h/7d)
+  - System status and diagnostics
 
 * 📡 **Captive Portal Mode**
   Automatic fallback Access Point when Wi-Fi is unavailable
 
-* 🔔 **Smart Notifications**
-
-  * Telegram alerts with approval-based subscription
-  * Periodic updates with configurable intervals
-  * Blynk mobile dashboard integration
+* 🔔 **Smart Notifications & Alerts**
+  - Telegram alerts with approval-based subscription
+  - Periodic updates with configurable intervals
+  - Blynk mobile dashboard integration
+  - **NEW:** Advanced alert system with configurable thresholds
+  - **NEW:** Low/Critical/High level alerts with hysteresis
+  - **NEW:** Sensor error notifications
 
 * 🔗 **ESP-NOW Integration**
   Low-latency communication with external controllers
@@ -28,6 +35,20 @@ Designed for reliability and automation, it combines sensor-based measurement, w
 
 * 🧠 **Automation-Friendly API**
   REST endpoints for monitoring, health checks, and integrations
+
+* 🔄 **OTA Updates** ⭐ NEW
+  Over-the-air firmware updates for remote maintenance
+
+* 📈 **Historical Data Logging** ⭐ NEW
+  - SPIFFS-based data storage
+  - Configurable logging intervals
+  - Up to 7 days of historical data
+  - API endpoint for data retrieval
+
+* 🏠 **MQTT/Home Assistant Support** ⭐ NEW
+  - Optional MQTT integration
+  - Home Assistant auto-discovery compatible
+  - Real-time status publishing
 
 ---
 
@@ -119,19 +140,58 @@ Returns system health and sensor data:
 }
 ```
 
+### `GET /api/system` ⭐ NEW
+
+Returns detailed system information:
+
+```json
+{
+  "device":"water-level-monitor-esp32",
+  "version":"2.0.0",
+  "uptime_seconds":12345,
+  "free_heap":123456,
+  "wifi_rssi":-45,
+  "wifi_connected":true,
+  "ip_address":"192.168.1.50",
+  "data_logging":true,
+  "mqtt_enabled":false,
+  "mqtt_connected":false,
+  "ota_enabled":true
+}
+```
+
+### `GET /api/history?hours=24` ⭐ NEW
+
+Returns historical data (default 24 hours, max 168 hours):
+
+```json
+[
+  {"ts":1234567890,"t1":78.5,"t2":42.3},
+  {"ts":1234568790,"t1":77.2,"t2":43.1}
+]
+```
+
+### `POST /api/clearLogs?days=7` ⭐ NEW
+
+Clears historical data older than specified days
+
 ---
 
 ## 🗂️ Project Structure
 
 ```
 WaterTankMonitor.ino   # Main loop and orchestration
-SensorManager.*        # Ultrasonic measurement logic
+SensorManager.*        # Ultrasonic measurement logic with averaging
 WiFiManager.*          # Wi-Fi + AP fallback handling
 WebServerManager.*     # Dashboard UI and API routes
 TelegramManager.*      # Telegram bot integration
 BlynkManager.*         # Blynk communication
 EspNowManager.*        # ESP-NOW messaging
 ConfigManager.*        # Persistent configuration (NVS)
+OTAManager.*           # ⭐ NEW: Over-the-air update handling
+DataLogger.*           # ⭐ NEW: SPIFFS-based historical data logging
+MQTTManager.*          # ⭐ NEW: MQTT/Home Assistant integration
+AlertManager.*         # ⭐ NEW: Advanced alert system with thresholds
 ```
 
 ---
@@ -171,10 +231,14 @@ ConfigManager.*        # Persistent configuration (NVS)
 
 ## 🛠️ Roadmap
 
-* [ ] OTA firmware updates
-* [ ] Historical data logging
-* [ ] MQTT / Home Assistant integration
-* [ ] Advanced alert rules
+* [x] OTA firmware updates ✅
+* [x] Historical data logging ✅
+* [x] MQTT / Home Assistant integration ✅
+* [x] Advanced alert rules ✅
+* [ ] Web-based configuration UI
+* [ ] Mobile app (React Native)
+* [ ] Multi-language support
+* [ ] Cloud backup integration
 
 ---
 
