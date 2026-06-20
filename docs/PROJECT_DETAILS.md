@@ -18,26 +18,37 @@ It combines local display (web dashboard) and remote notifications (Telegram + B
 - `WaterTankMonitor.ino`  
   Main orchestrator, timing, scheduling, notifications, Telegram polling.
 - `SensorManager.*`  
-  Sensor pin setup and ultrasonic distance-to-water-level conversion, with basic error validation.
+  Sensor pin setup and ultrasonic distance-to-water-level conversion with multi-sample averaging and error validation.
 - `ConfigManager.*`  
   Reads/writes runtime configuration from NVS.
 - `WiFiManager.*`  
   Connects ESP32 to Wi-Fi or starts AP fallback.
 - `WebServerManager.*`  
-  Hosts dashboard files and REST-style endpoints.
+  Hosts dashboard files and REST-style endpoints including historical data and system info.
 - `TelegramManager.*`  
   Sends messages and handles bot command approval flow.
 - `BlynkManager.*`  
   Connects and pushes virtual pin values.
 - `EspNowManager.*`  
   Sends structured ESP-NOW packets to paired peer.
+- `OTAManager.*` ⭐ NEW  
+  Handles over-the-air firmware updates with progress tracking and error handling.
+- `DataLogger.*` ⭐ NEW  
+  SPIFFS-based historical data logging with automatic pruning and JSON storage.
+- `MQTTManager.*` ⭐ NEW  
+  MQTT client for Home Assistant integration with auto-reconnection.
+- `AlertManager.*` ⭐ NEW  
+  Advanced alert system with configurable thresholds, hysteresis, and state tracking.
 
 ## Exposed HTTP Endpoints
 
 - `GET /` - dashboard UI
 - `GET /style.css`, `GET /script.js`, `GET /manifest.json` - UI assets
 - `GET /api/levels` - tank percentages
-- `GET /api/status` - device + tank health (new)
+- `GET /api/status` - device + tank health
+- `GET /api/system` - ⭐ NEW: detailed system information (version, uptime, memory, features)
+- `GET /api/history?hours=24` - ⭐ NEW: historical data retrieval
+- `POST /api/clearLogs?days=7` - ⭐ NEW: clear old historical data
 - `GET /getConfig` - fetch high-frequency and quiet-hour config
 - `POST /saveConfig` - save time-slot config
 
