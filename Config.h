@@ -64,4 +64,12 @@
 #define ENABLE_DATA_LOGGING true
 #define LOG_INTERVAL_MINUTES 15  // Log data every 15 minutes
 
+// Cloud Backup (Google Cloud Storage via signed upload URL)
+// To enable, set CLOUD_BACKUP_ENABLED to true and provide a signed upload URL.
+#define CLOUD_BACKUP_ENABLED false
+// Example: https://storage.googleapis.com/your-bucket/backup-file?X-Goog-Algorithm=...
+#define CLOUD_BACKUP_SIGNED_URL ""
+// Path in SPIFFS to the file to upload (change if your logger uses different path)
+#define CLOUD_BACKUP_SPIFFS_PATH "/logs.csv"
+
 #endif
