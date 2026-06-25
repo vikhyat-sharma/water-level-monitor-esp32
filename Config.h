@@ -72,4 +72,11 @@
 // Path in SPIFFS to the file to upload (change if your logger uses different path)
 #define CLOUD_BACKUP_SPIFFS_PATH "/logs.csv"
 
+// SMS (Twilio) configuration
+// To enable SMS alerts set TWILIO_ENABLED to true and fill in the credentials.
+#define TWILIO_ENABLED false
+#define TWILIO_ACCOUNT_SID ""
+#define TWILIO_AUTH_TOKEN ""
+#define TWILIO_FROM_NUMBER "+1234567890"
+
 #endif
